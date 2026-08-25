@@ -1,0 +1,9 @@
+{
+  "name": "citizen-platform",
+  "private": true,
+  "scripts": {
+    "dev:server": "cd server && node index.js",
+    "dev:client": "cd client && npx vite --host",
+    "seed": "cd server && node db/seed.js"
+  }
+}
