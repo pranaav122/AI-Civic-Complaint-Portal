@@ -1,5 +1,4 @@
-const API_BASE = '/api';
-
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 async function fetchWithAuth(url, options = {}) {
   const token = localStorage.getItem('token');
   const headers = {
@@ -14,13 +13,13 @@ async function fetchWithAuth(url, options = {}) {
   if (!(options.body instanceof FormData) && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json';
   }
-  
+
   if (options.body && !(options.body instanceof FormData) && typeof options.body === 'object') {
-     options.body = JSON.stringify(options.body);
+    options.body = JSON.stringify(options.body);
   }
 
   const response = await fetch(`${API_BASE}${url}`, { ...options, headers });
-  
+
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.error || errorData.message || `API Error: ${response.status}`);
