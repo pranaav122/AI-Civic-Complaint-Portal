@@ -9,13 +9,15 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 
+import { ServiceGrid } from '../components/ui/service-grid';
+
 const CATEGORIES = [
-  { id: 'roads', icon: Construction, color: 'text-gray-800' },
-  { id: 'water', icon: Droplets, color: 'text-gray-800' },
-  { id: 'sanitation', icon: Trash2, color: 'text-gray-800' },
-  { id: 'streetlights', icon: Zap, color: 'text-gray-800' },
-  { id: 'drainage', icon: Droplets, color: 'text-gray-800' },
-  { id: 'transport', icon: Truck, color: 'text-gray-800' },
+  { id: 'roads', imageUrl: 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=320&q=75&auto=format&fit=crop' },
+  { id: 'water', imageUrl: 'https://images.unsplash.com/photo-1548222606-6c4f58ea1fdb?w=320&q=75&auto=format&fit=crop' },
+  { id: 'sanitation', imageUrl: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=320&q=75&auto=format&fit=crop' },
+  { id: 'streetlights', imageUrl: 'https://images.unsplash.com/photo-1512403754473-27835f7b9984?w=320&q=75&auto=format&fit=crop' },
+  { id: 'drainage', imageUrl: 'https://images.unsplash.com/photo-1515516089376-88db1e26e9c0?w=320&q=75&auto=format&fit=crop' },
+  { id: 'transport', imageUrl: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=320&q=75&auto=format&fit=crop' },
 ];
 
 export default function Home() {
@@ -117,28 +119,18 @@ export default function Home() {
       </section>
 
       {/* Quick Actions Grid */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full -mt-8 relative z-20">
-        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
-          <div className="flex items-center justify-between mb-4 px-2">
-            <h2 className="text-lg font-bold text-slate-800">Quick actions</h2>
-            <Link to="/report" className="text-sm font-semibold text-civic-600 hover:text-civic-700 flex items-center gap-1">
-              View all <ArrowRight size={16} />
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            {CATEGORIES.map(({ id, icon: Icon, color }) => (
-              <button
-                key={id}
-                onClick={() => handleCategoryClick(id)}
-                className="group flex flex-col items-center justify-center p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-civic-200 hover:bg-civic-50 transition-colors"
-              >
-                <Icon size={28} className={clsx("mb-2 shrink-0 transition-transform group-hover:scale-110", color, "group-hover:text-civic-600")} />
-                <span className="text-sm font-semibold text-slate-700 group-hover:text-civic-700">
-                  {t(`category.${id}`)}
-                </span>
-              </button>
-            ))}
-          </div>
+      <section className="relative z-20 -mt-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+          <ServiceGrid
+            title="Quick actions"
+            services={CATEGORIES.map(c => ({
+              id: c.id,
+              name: t(`category.${c.id}`),
+              imageUrl: c.imageUrl
+            }))}
+            onServiceClick={handleCategoryClick}
+            className="py-8 md:py-10"
+          />
         </div>
       </section>
 
