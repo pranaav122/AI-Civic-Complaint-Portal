@@ -113,7 +113,19 @@ const translations = {
   "action.edit": { en: "Edit", ta: "திருத்து" },
   "action.delete": { en: "Delete", ta: "அழி" },
   "action.view": { en: "View", ta: "பார்க்க" },
-  "action.close": { en: "Close", ta: "மூடு" }
+  "action.close": { en: "Close", ta: "மூடு" },
+
+  // Auth
+  "auth.login": { en: "Login to your account", ta: "உங்கள் கணக்கில் உள்நுழையவும்" },
+  "auth.register": { en: "Create an account", ta: "ஒரு கணக்கை உருவாக்கவும்" },
+  "auth.email": { en: "Email Address", ta: "மின்னஞ்சல் முகவரி" },
+  "auth.password": { en: "Password", ta: "கடவுச்சொல்" },
+  "auth.name": { en: "Full Name", ta: "முழு பெயர்" },
+  "auth.phone": { en: "Phone Number", ta: "தொலைபேசி எண்" },
+  "auth.submitLogin": { en: "Login", ta: "உள்நுழைய" },
+  "auth.submitRegister": { en: "Register", ta: "பதிவு செய்ய" },
+  "auth.noAccount": { en: "Don't have an account?", ta: "கணக்கு இல்லையா?" },
+  "auth.hasAccount": { en: "Already have an account?", ta: "ஏற்கனவே கணக்கு உள்ளதா?" }
 };
 
 export default translations;

@@ -1,44 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useTranslation } from '../i18n/LanguageContext';
+import { useTranslation, useLanguage } from '../i18n/LanguageContext';
 import * as api from '../services/api';
-import StatsCard from '../components/StatsCard';
 import { 
-  ArrowRight, FileText, Activity, CheckCircle, 
-  Clock, Construction, Droplets, Trash2, 
-  Zap, Truck, Building2, HelpCircle, Loader2, 
-  TrendingUp, Sparkles, ShieldCheck, Search
+  ArrowRight, FileText, Search, BookOpen, ShieldCheck, 
+  MapPin, Loader2, Zap, Droplets, Trash2, Truck, 
+  Building2, HelpCircle, Construction, CheckCircle, Activity
 } from 'lucide-react';
+import clsx from 'clsx';
 
 const CATEGORIES = [
-  { id: 'roads', icon: Construction, color: 'text-amber-600', bg: 'bg-amber-50' },
-  { id: 'water', icon: Droplets, color: 'text-blue-600', bg: 'bg-blue-50' },
-  { id: 'drainage', icon: Droplets, color: 'text-cyan-600', bg: 'bg-cyan-50' },
-  { id: 'sanitation', icon: Trash2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-  { id: 'streetlights', icon: Zap, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-  { id: 'transport', icon: Truck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-  { id: 'infrastructure', icon: Building2, color: 'text-purple-600', bg: 'bg-purple-50' },
-  { id: 'other', icon: HelpCircle, color: 'text-gray-600', bg: 'bg-gray-50' },
+  { id: 'roads', icon: Construction, color: 'text-gray-800' },
+  { id: 'water', icon: Droplets, color: 'text-gray-800' },
+  { id: 'sanitation', icon: Trash2, color: 'text-gray-800' },
+  { id: 'streetlights', icon: Zap, color: 'text-gray-800' },
+  { id: 'drainage', icon: Droplets, color: 'text-gray-800' },
+  { id: 'transport', icon: Truck, color: 'text-gray-800' },
 ];
 
 export default function Home() {
   const { t } = useTranslation();
+  const { language } = useLanguage();
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
+  const [recentComplaints, setRecentComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const data = await api.getPublicAnalytics();
-        setStats(data);
+        const [statsData, complaintsData] = await Promise.all([
+          api.getPublicAnalytics(),
+          api.getComplaints({ limit: 3 })
+        ]);
+        setStats(statsData);
+        setRecentComplaints(complaintsData.data || []);
       } catch (err) {
-        console.error("Failed to load stats", err);
+        console.error("Failed to load data", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchStats();
+    fetchData();
   }, []);
 
   const handleCategoryClick = (categoryId) => {
@@ -46,190 +49,242 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50">
+    <div className="flex flex-col min-h-screen bg-[#fcfbf9] text-slate-800 font-sans selection:bg-civic-200 selection:text-civic-900">
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-700 via-indigo-700 to-blue-900 text-white py-16 lg:py-24 px-4 sm:px-6">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent pointer-events-none" />
-        <div className="max-w-5xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-blue-100 text-sm font-medium mb-6">
-            <Sparkles size={16} className="text-yellow-300 shrink-0" />
-            <span>AI-Assisted Citizen Portal</span>
+      <section className="relative pt-20 pb-24 lg:pt-28 lg:pb-32 px-4 sm:px-6 overflow-hidden border-b border-gray-200">
+        {/* Abstract map background pattern using SVG */}
+        <div 
+          className="absolute inset-0 z-0 opacity-[0.15]" 
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10h80v80H10zM30 30h15v15H30zM60 30h10v40H60zM25 60h25v10H25z' fill='none' stroke='%23334155' stroke-width='1.5' stroke-dasharray='4 4'/%3E%3C/svg%3E")`,
+            backgroundSize: '120px 120px'
+          }}
+        />
+        
+        {/* Fading gradient to smooth out the pattern */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#fcfbf9]/60 to-[#fcfbf9] z-0" />
+
+        <div className="max-w-5xl mx-auto text-center relative z-10 flex flex-col items-center">
+          
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-gray-700 shadow-sm mb-8 hover:shadow-md transition-shadow">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+            </span>
+            Civic services &middot; online
           </div>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
-            {t('hero.tagline')}
+          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 text-slate-900 leading-[1.1]">
+            Report civic issues.<br className="hidden sm:block"/> Track real progress.
           </h1>
-          <p className="text-lg sm:text-xl text-blue-100/90 max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
-            {t('hero.subtitle')}
+          
+          <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed">
+            The unified platform for {language === 'en' ? 'residents' : 'குடிமக்கள்'} to fix neighborhood problems, access government schemes, and monitor real-time municipal responses.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
+          <div className="flex flex-col sm:flex-row items-stretch justify-center gap-4 w-full max-w-2xl mx-auto mb-8">
             <Link 
               to="/report" 
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-blue-700 hover:bg-blue-50 px-8 py-3.5 rounded-xl font-semibold text-base shadow-lg shadow-blue-950/20 hover:shadow-xl transition-all duration-200"
+              className="flex-1 inline-flex items-center justify-center gap-2 bg-civic-600 text-white hover:bg-civic-700 px-6 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
             >
-              <FileText size={20} className="shrink-0 text-blue-600" />
+              <FileText size={22} className="shrink-0" />
               <span>{t('hero.reportBtn')}</span>
             </Link>
+            
             <Link 
               to="/my-complaints" 
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/25 backdrop-blur-sm px-8 py-3.5 rounded-xl font-semibold text-base transition-all duration-200"
+              className="flex-1 inline-flex items-center justify-center gap-2 bg-white text-slate-800 border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 px-6 py-4 rounded-xl font-bold text-lg shadow-sm transition-all"
             >
-              <Search size={20} className="shrink-0 text-blue-200" />
+              <Search size={22} className="shrink-0 text-slate-500" />
               <span>{t('hero.trackBtn')}</span>
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Categories Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
-            {t('common.reportIssueCategory')}
-          </h2>
-          <p className="text-gray-500 text-sm sm:text-base max-w-xl mx-auto">
-            Select a service area to immediately file a problem for automated routing.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {CATEGORIES.map(({ id, icon: Icon, color, bg }) => (
-            <button
-              key={id}
-              onClick={() => handleCategoryClick(id)}
-              className="group bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-300 transition-all duration-200 flex flex-col items-center justify-center text-center cursor-pointer"
+            
+            <Link 
+              to="/schemes" 
+              className="flex-1 inline-flex items-center justify-center gap-2 bg-yellow-100 text-yellow-900 border border-yellow-200 hover:bg-yellow-200 px-6 py-4 rounded-xl font-bold text-lg shadow-sm transition-all"
             >
-              <div className={`w-16 h-16 ${bg} ${color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200 shadow-sm shrink-0`}>
-                <Icon size={28} className="shrink-0" />
-              </div>
-              <span className="font-semibold text-gray-800 group-hover:text-blue-600 text-sm sm:text-base transition-colors line-clamp-1">
-                {t(`categories.${id}`)}
-              </span>
-            </button>
-          ))}
+              <BookOpen size={22} className="shrink-0 text-yellow-700" />
+              <span>{t('hero.schemesBtn')}</span>
+            </Link>
+          </div>
+          
+          <div className="flex items-center justify-center gap-2 text-sm text-slate-500 font-medium">
+            <ShieldCheck size={16} className="text-green-600" />
+            Your report is handled securely. You stay in control of your information.
+          </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white border-y border-gray-100 w-full">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
-              {t('help.howItWorks')}
-            </h2>
-            <p className="text-gray-500 text-sm sm:text-base max-w-xl mx-auto">
-              Our 4-step streamlined process guarantees direct government department accountability.
-            </p>
+      {/* Quick Actions Grid */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full -mt-8 relative z-20">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
+          <div className="flex items-center justify-between mb-4 px-2">
+            <h2 className="text-lg font-bold text-slate-800">Quick actions</h2>
+            <Link to="/report" className="text-sm font-semibold text-civic-600 hover:text-civic-700 flex items-center gap-1">
+              View all <ArrowRight size={16} />
+            </Link>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              { 
-                step: '01', 
-                icon: FileText, 
-                title: 'Describe Your Issue', 
-                desc: 'Submit text, voice notes, or photos in English, Tamil, or mixed language.',
-                color: 'text-blue-600',
-                bg: 'bg-blue-50'
-              },
-              { 
-                step: '02', 
-                icon: Sparkles, 
-                title: 'AI Analyzes & Routes', 
-                desc: 'Smart system assigns department, priority, and coordinates automatically.',
-                color: 'text-indigo-600',
-                bg: 'bg-indigo-50'
-              },
-              { 
-                step: '03', 
-                icon: Construction, 
-                title: 'Department Action', 
-                desc: 'Municipal staff receives the ticket and dispatches field resolution teams.',
-                color: 'text-amber-600',
-                bg: 'bg-amber-50'
-              },
-              { 
-                step: '04', 
-                icon: ShieldCheck, 
-                title: 'Track & Verify', 
-                desc: 'Receive progress notifications and confirm final resolution satisfaction.',
-                color: 'text-emerald-600',
-                bg: 'bg-emerald-50'
-              },
-            ].map((item, idx) => (
-              <div 
-                key={idx} 
-                className="relative bg-slate-50/70 p-6 rounded-2xl border border-slate-100 flex flex-col items-center text-center hover:bg-slate-50 transition-colors"
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+            {CATEGORIES.map(({ id, icon: Icon, color }) => (
+              <button
+                key={id}
+                onClick={() => handleCategoryClick(id)}
+                className="group flex flex-col items-center justify-center p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-civic-200 hover:bg-civic-50 transition-colors"
               >
-                <div className="absolute top-4 right-4 text-xs font-extrabold text-gray-300">
-                  {item.step}
-                </div>
-                <div className={`w-14 h-14 ${item.bg} ${item.color} rounded-2xl flex items-center justify-center mb-5 shadow-sm shrink-0`}>
-                  <item.icon size={26} className="shrink-0" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">{item.desc}</p>
-              </div>
+                <Icon size={28} className={clsx("mb-2 shrink-0 transition-transform group-hover:scale-110", color, "group-hover:text-civic-600")} />
+                <span className="text-sm font-semibold text-slate-700 group-hover:text-civic-700">
+                  {t(`category.${id}`)}
+                </span>
+              </button>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Live Stats Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <Activity className="text-blue-600 shrink-0" size={28} />
-              <span>{t('dashboard.title')}</span>
-            </h2>
-            <p className="text-gray-500 text-sm mt-1">Real-time resolution metrics across all wards.</p>
-          </div>
-          <Link 
-            to="/dashboard" 
-            className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 font-semibold text-sm hover:underline transition-all"
-          >
-            <span>{t('common.viewAll')}</span>
-            <ArrowRight size={16} className="shrink-0" />
-          </Link>
+      {/* How it works */}
+      <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-4">
+            How it works
+          </h2>
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            A simple, transparent process to get neighborhood issues resolved efficiently.
+          </p>
         </div>
-        
-        {loading ? (
-          <div className="flex justify-center items-center h-36 bg-white rounded-2xl border border-gray-100">
-            <Loader2 className="animate-spin text-blue-600 shrink-0" size={32} />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <StatsCard 
-              title={t('dashboard.totalComplaints')} 
-              value={stats?.total || 0} 
-              icon={FileText} 
-              color="blue" 
-            />
-            <StatsCard 
-              title={t('dashboard.resolved')} 
-              value={stats?.resolved || 0} 
-              icon={CheckCircle} 
-              color="green" 
-            />
-            <StatsCard 
-              title={t('dashboard.resolutionRate')} 
-              value={`${stats?.resolutionRate || 0}%`} 
-              icon={TrendingUp} 
-              color="indigo" 
-            />
-            <StatsCard 
-              title={t('dashboard.avgTime')} 
-              value={`${stats?.avgResolutionDays || stats?.avgResolutionHours ? Math.round((stats.avgResolutionHours || 0)/24) : 0} ${t('common.days')}`} 
-              icon={Clock} 
-              color="purple" 
-            />
-          </div>
-        )}
+
+        <div className="grid md:grid-cols-3 gap-8 relative">
+          {/* Connector line for desktop */}
+          <div className="hidden md:block absolute top-12 left-1/6 right-1/6 h-0.5 bg-slate-200 z-0"></div>
+          
+          {[
+            { title: "1. Report", desc: "Submit an issue with a photo and location. Our AI categorizes it instantly.", icon: FileText },
+            { title: "2. Routed", desc: "The platform assigns it to the exact department and personnel responsible.", icon: Zap },
+            { title: "3. Track resolution", desc: "Get live updates. You verify when the work is actually completed.", icon: CheckCircle }
+          ].map((step, i) => (
+            <div key={i} className="relative z-10 flex flex-col items-center text-center">
+              <div className="w-24 h-24 rounded-full bg-white border-4 border-[#fcfbf9] shadow-md flex items-center justify-center mb-6">
+                <div className="w-20 h-20 rounded-full bg-civic-50 flex items-center justify-center text-civic-600">
+                  <step.icon size={32} />
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">{step.title}</h3>
+              <p className="text-slate-600">{step.desc}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
+      {/* Work you can follow */}
+      <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-white border-y border-slate-200">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-10 gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Activity size={20} className="text-civic-600" />
+                <h2 className="text-3xl font-extrabold text-slate-900">Work you can follow</h2>
+              </div>
+              <p className="text-slate-600">Real-time civic activity in the area.</p>
+            </div>
+            <Link to="/dashboard" className="inline-flex items-center gap-1 text-civic-600 font-semibold hover:text-civic-800 transition-colors">
+              View full dashboard <ArrowRight size={16} />
+            </Link>
+          </div>
+
+          <div className="mb-4">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-yellow-100 text-yellow-800 text-xs font-bold uppercase tracking-wider">
+              Demo Data
+            </span>
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="animate-spin text-slate-300" size={40} />
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-6">
+              {recentComplaints.length > 0 ? recentComplaints.map(complaint => (
+                <Link key={complaint.id} to={`/track/${complaint.complaint_id}`} className="block group">
+                  <div className="bg-[#fcfbf9] border border-slate-200 rounded-2xl p-6 h-full hover:border-civic-300 hover:shadow-md transition-all">
+                    <div className="flex justify-between items-start mb-4">
+                      <span className="px-2.5 py-1 bg-white border border-slate-200 rounded-md text-xs font-bold text-slate-700 capitalize">
+                        {complaint.category}
+                      </span>
+                      <span className={clsx(
+                        "px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1",
+                        complaint.status === 'resolved' ? "bg-green-100 text-green-700" :
+                        complaint.status === 'in_progress' ? "bg-blue-100 text-blue-700" :
+                        "bg-slate-200 text-slate-700"
+                      )}>
+                        {complaint.status === 'resolved' && <CheckCircle size={12} />}
+                        {t(`status.${complaint.status}`) || complaint.status}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-slate-900 mb-2 line-clamp-2 group-hover:text-civic-600 transition-colors">
+                      {complaint.description}
+                    </h3>
+                    <div className="flex items-center gap-1.5 text-sm text-slate-500 mt-auto pt-4">
+                      <MapPin size={14} />
+                      <span className="line-clamp-1">{complaint.ward || 'Unknown location'}</span>
+                    </div>
+                  </div>
+                </Link>
+              )) : (
+                <div className="col-span-3 text-center py-12 text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  No public activity to display yet.
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-slate-900 text-slate-300 py-12 px-4 sm:px-6 lg:px-8 mt-auto">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="col-span-1 md:col-span-2">
+            <div className="flex items-center gap-2 mb-4 text-white">
+              <div className="w-8 h-8 bg-civic-600 rounded-lg flex items-center justify-center font-bold text-lg">C</div>
+              <span className="font-bold text-xl tracking-tight">Citizen Platform</span>
+            </div>
+            <p className="text-sm text-slate-400 max-w-sm mb-6">
+              A modern, AI-powered interface connecting residents with municipal services for faster, transparent resolution.
+            </p>
+            <div className="inline-flex px-3 py-1 bg-slate-800 rounded-md border border-slate-700 text-xs font-bold text-slate-400">
+              Demo Civic Platform
+            </div>
+          </div>
+          
+          <div>
+            <h4 className="text-white font-bold mb-4">Resources</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link to="/help" className="hover:text-white transition-colors">Help & Support</Link></li>
+              <li><Link to="/report" className="hover:text-white transition-colors">Report an Issue</Link></li>
+              <li><Link to="/schemes" className="hover:text-white transition-colors">Find Schemes</Link></li>
+              <li><Link to="/dashboard" className="hover:text-white transition-colors">Public Dashboard</Link></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className="text-white font-bold mb-4">Legal & Options</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Accessibility</a></li>
+              <li className="pt-2">
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="flex items-center gap-2 text-white bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-md transition-colors"
+                >
+                  Change Language ({language === 'en' ? 'தமிழ்' : 'English'})
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div className="max-w-6xl mx-auto mt-12 pt-8 border-t border-slate-800 text-sm text-slate-500 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p>© {new Date().getFullYear()} Model Citizen Platform. Open source civic tech.</p>
+        </div>
+      </footer>
     </div>
   );
 }
